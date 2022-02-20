@@ -1,3 +1,19 @@
+#!/usr/bin/env python
+"""Provides the Aircraft class for the simulation, the aircraft is a simple simulated entity.
+
+Aircraft is respoinsible for the simplified implementation of an aircraft.
+"""
+
+
+__author__ = "Ellis Thompson"
+__credits__ = ["Ellis Thompson"]
+
+__license__ = "GNU GPLv3"
+__maintainer__ = "Ellis Thompson"
+__email__ = "thompson_e@gwu.edu"
+__status__ = "Development"
+
+
 class Aircraft:
     """
     Defines an aircraft and its calculations to take each step

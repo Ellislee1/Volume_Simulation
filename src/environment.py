@@ -1,8 +1,24 @@
+#!/usr/bin/env python
+"""Provides the Environment class for the simulation environment.
+
+Environment is responsible for running the simulation at each step as well as checking
+for terminal conditions and generation new aircraft. It usually runs disjointed from the
+UI but when the UI is active is bound by the FPS of that UI.
+"""
+
 from time import sleep
 
 import numpy as np
 
 from aircraft import Aircraft
+
+__author__ = "Ellis Thompson"
+__credits__ = ["Ellis Thompson"]
+
+__license__ = "GNU GPLv3"
+__maintainer__ = "Ellis Thompson"
+__email__ = "thompson_e@gwu.edu"
+__status__ = "Development"
 
 
 class Environment():
