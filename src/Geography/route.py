@@ -84,6 +84,8 @@ class Route:
 
         self._id = _id                  # Unique ID of the route
         self.origional_route = route    # The unedited route
+
+        self.init_route(route)
     
     def init_route(self, route):
         """

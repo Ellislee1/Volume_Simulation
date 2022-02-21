@@ -172,6 +172,12 @@ class Environment():
 
             self.objects['waypoints'] = wpts
             self.objects['routes'] = rts
+        
+        if len(self.objects['routes']) > 0:
+            self.start_points = []
+
+            for _, item in self.objects['routes'].items():
+                self.start_points.append(item.start)
 
         # Simulation Parameters
         self.running = False                    # Is the simulation running
