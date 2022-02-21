@@ -23,6 +23,7 @@ class Point:
     ----------
     x: float
         The x coordinate
+    
     y: float
         The y coordinate
 
@@ -30,6 +31,7 @@ class Point:
     -------
     update(h, d)
         Move the current point by some distance in some heading
+    
     get
         Returns the coordinates of the point
     """
@@ -39,6 +41,7 @@ class Point:
         ----------
         x: float
             The x coordinate
+        
         y: float
             The y coordinate
         """
@@ -53,6 +56,7 @@ class Point:
         ----------
         h: float
             The heading that point should be moved to
+        
         d: float
             The distance the point should be moved
         """

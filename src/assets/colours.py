@@ -22,3 +22,6 @@ SAFE = GREEN
 WARNING = (201, 155, 26)
 DANGER = RED
 LINE = (171, 9, 119)
+
+# UI colours
+BACKGROUND = (10, 10, 25)
