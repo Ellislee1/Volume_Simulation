@@ -7,7 +7,7 @@ from queue import Queue
 
 from src.geography.point import Point
 from src.geography.waypoint import Waypoint
-from src.utility.util import get_dist
+from src.utility.util import get_dist, get_heading
 
 __author__ = "Ellis Thompson"
 __credits__ = ["Ellis Thompson"]
@@ -41,6 +41,9 @@ class Route:
     
     previous_waypoint: Point/Waypoint
         The aircrafts previous waypoint
+    
+    init_heading: int
+        The initial route heading
 
     Methods
     -------
@@ -102,9 +105,11 @@ class Route:
         for point in route:
             self.route.put(point)
         
-        self.start = self.route.get()           # The start point of the route
-        self.next_waypoint = self.route.get()   # The next waypoint after start
-        self.previous_waypoint = self.start     # The waypoint the aircraft is leaving
+        self.start = self.route.get()                                   # The start point of the route
+        self.next_waypoint = self.route.get()                           # The next waypoint after start
+        self.previous_waypoint = self.start                             # The waypoint the aircraft is leaving
+
+        self.init_heading = get_heading(self.start, self.next_waypoint) # The initial heading for the route
     
     def update(self, ac_pos: Point, wpt_dist:float = 10, max_dist:int = 25, acc:int = 3) -> int:
         """
@@ -130,7 +135,7 @@ class Route:
 
         # Has the aircraft reached it's goal
         if d_next <= wpt_dist:
-            if self.next_waypoint == self.end:
+            if self.route.qsize() == 0:
                 return 1
             # Update waypoint if not
             self.next_waypoint = self.route.get()
@@ -164,13 +169,13 @@ class Route:
         x2, y2 = self.next_waypoint.get()
         x3, y3 = pos.get()
 
-        dx, dy = x2-x2, y2-y1
+        dx, dy = x2-x1, y2-y1
         det = (dx*dx) + (dy*dy)
         a = (dy*(y3-y1)+dx*(x3-x1))/det
 
         cx, cy = x1+a*dx,y1+a*dy
 
-        distance = round(get_dist, acc)
+        distance = round(get_dist(Point(cx,cy), pos), acc)
 
         if distance < max_dist:
             return True, distance

@@ -50,7 +50,7 @@ def main(area: int, scale: float, fps: int):
     fps: int
         The fps to run the simulation in
     """
-    env = Environment(area=area, scale=scale, fps=fps, start_points=[Point(50, 100), Point(400, 227), Point(650,526)], env_path=TEST_FILE)
+    env = Environment(area=area, scale=scale, fps=fps, env_path=TEST_FILE)
     window = Window(env, area, fps)
 
     t = threading.Thread(target=env.run)

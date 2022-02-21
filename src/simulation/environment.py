@@ -45,9 +45,6 @@ class Environment():
     time_scale: float
         The scale used to apply to the speed of the environment
     
-    start_points: [point/waypoint]
-            An array of starting points either as points or waypoints
-    
     min_spd: int
         The minimum speed of a generated aircraft m/s
     
@@ -99,7 +96,7 @@ class Environment():
         Draw a limited number of older paths
 
     """
-    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, start_points: [Point] = [0,0], min_spd: int = 15, max_spd: int = 40, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [9,12,15], env_path:string = None):
+    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, min_spd: int = 15, max_spd: int = 40, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [9,12,15], env_path:string = None):
         """
         Parameters
         ----------
@@ -151,7 +148,6 @@ class Environment():
         self.time_scale = time_scale            # How quickly should the simulation run
 
         # Aircraft Parameters (for generation)
-        self.start_points = start_points        # All possible ac start positions
         self.delay = delay * scale              # Time in seconds between ac generation
         self.min_spd = min_spd                  # Minimum aircraft speed
         self.max_spd = max_spd                  # Maximum aircraft speed
@@ -172,12 +168,6 @@ class Environment():
 
             self.objects['waypoints'] = wpts
             self.objects['routes'] = rts
-        
-        if len(self.objects['routes']) > 0:
-            self.start_points = []
-
-            for _, item in self.objects['routes'].items():
-                self.start_points.append(item.start)
 
         # Simulation Parameters
         self.running = False                    # Is the simulation running
@@ -195,9 +185,9 @@ class Environment():
         aircraft = 0
         step = 0
         timer = 0
-        next_ac = np.random.choice(self.delay, len(self.start_points))
-        _len = size = np.random.randint(1, len(self.start_points)+1)
-        next_ac[np.random.randint(len(self.start_points),
+        next_ac = np.random.choice(self.delay, len(self.objects['routes'].keys()))
+        _len = size = np.random.randint(1, len(self.objects['routes'].keys())+1)
+        next_ac[np.random.randint(len(self.objects['routes'].keys()),
         size = _len)] = 0
 
         self.ran = True
@@ -265,12 +255,13 @@ class Environment():
         _id: string
             The aircraft ID
         """
-        pos = self.start_points[k]
+        key = list(self.objects['routes'].keys())[k]
+        pos = self.objects['routes'][key].start
         spd = np.random.randint(self.min_spd,self.max_spd+1)
         alt = np.random.randint(self.min_alt,self.max_alt+1)
-        hdg = np.random.randint(0,360)
+        hdg = self.objects['routes'][key].init_heading
 
-        ac = Aircraft(_id,pos,spd,alt,hdg, scale=self.scale)
+        ac = Aircraft(_id,pos,spd,alt,hdg, scale=self.scale, route=self.objects['routes'][key].copy())
         self.objects['aircraft'][_id] = ac
     
     def draw_objects(self, WINDOW,  max_paths = 100):
