@@ -14,6 +14,7 @@ import numpy as np
 from src.geography.point import Point
 from src.simulation.aircraft import Aircraft
 from src.utility.filehandling import load_json
+from src.utility.util import get_dist
 
 __author__ = "Ellis Thompson"
 __credits__ = ["Ellis Thompson"]
@@ -85,6 +86,9 @@ class Environment():
     
     generate_ac(k)
         Generate an aircraft at the point correspoiding to position k
+
+    check_collisions(dist_matrix, min_sep = 25)
+        Check the aircraft in the environment for any collisions and terminate where applicible 
     
     get_is_finished
         Returns if the simulation is active
@@ -94,9 +98,12 @@ class Environment():
     
     draw_old_paths(WINDOW, max_paths = 100)
         Draw a limited number of older paths
+    
+    get_distance_matrix:
+        Generate a distance matrix of aircraft active in the environment
 
     """
-    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, min_spd: int = 15, max_spd: int = 40, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [9,12,15], env_path:string = None):
+    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, min_spd: int = 15, max_spd: int = 40, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [5,7,11], env_path:string = None):
         """
         Parameters
         ----------
@@ -156,11 +163,11 @@ class Environment():
         self.ac_prefix = ac_prefix              # Default string prefix
 
         # Objects
-        self.objects = {                        # Dictionary of objects
-            'aircraft':{},
-            'waypoints':{},
-            'routes':{},
-            'terminated':OrderedDict()
+        self.objects = {  
+            'routes':OrderedDict(),
+            'terminated':OrderedDict(),
+            'aircraft':OrderedDict(),    
+            'waypoints':OrderedDict()                  # Dictionary of objects
         }
 
         if not env_path is None:
@@ -210,7 +217,7 @@ class Environment():
                 sleep((1/self.fps)/self.time_scale)
             
             self.step()
-            step = (step + 1)%self.fps
+            step = (step + 1) % self.fps
 
             if step == 0:
                 timer += 1
@@ -221,11 +228,16 @@ class Environment():
         One step of the simulation where one step is the equivilent of 1 second * the time_scale.
         """
 
+        dist_matrix = self.get_distance_matrix()
+
         # Step and update all the aircraft
-        for ac in self.objects['aircraft'].keys():
+        for i, ac in enumerate(self.objects['aircraft'].keys()):
             self.objects['aircraft'][ac].step(self.area)
         
+        self.check_collisions(dist_matrix)
+        
         self.update_active()
+
     
     def update_active(self):
         """
@@ -233,7 +245,7 @@ class Environment():
         """
         aircraft = self.objects['aircraft'].keys()
 
-        new_active = {}
+        new_active = OrderedDict()
 
         for ac in aircraft:
             if self.objects['aircraft'][ac].terminated > 0:
@@ -264,6 +276,34 @@ class Environment():
         ac = Aircraft(_id,pos,spd,alt,hdg, scale=self.scale, route=self.objects['routes'][key].copy())
         self.objects['aircraft'][_id] = ac
     
+
+    def check_collisions(self, dist_matrix: np.array, min_sep: float = 25):
+        """
+        Check the aircraft in the environment for any collisions and terminate where applicible 
+
+        Parameters
+        ----------
+        dist_matrix: np.array
+            The matrix of distances between aircraft
+        
+        min_sep: float
+            The min separation between aircraft in meters
+        """
+
+        for i, key in enumerate(self.objects['aircraft']):
+            if self.objects['aircraft'][key].terminated > 0:
+                continue
+            dist_array = dist_matrix[i,:]
+
+            for j, j_key in enumerate(self.objects['aircraft']):
+                if i == j or self.objects['aircraft'][j_key].terminated > 0:
+                    continue
+
+                if dist_array[j] < min_sep:
+                    self.objects['aircraft'][key].terminated = 3
+                    self.objects['aircraft'][j_key].terminated = 3
+
+
     def draw_objects(self, WINDOW,  max_paths = 100):
         """
         Draws all visible elements to the window
@@ -278,10 +318,10 @@ class Environment():
         """
 
         # Draw fixed old paths
-        self.draw_old_paths(WINDOW, max_paths)
 
         for key, item in self.objects.items():
             if key == 'terminated':
+                self.draw_old_paths(WINDOW, max_paths)
                 continue
             for k, __o in item.items():
                 __o.draw(WINDOW)
@@ -318,3 +358,22 @@ class Environment():
             return True
         
         return False
+    
+    def get_distance_matrix(self) -> np.array:
+        """
+        Generate a distance matrix of aircraft active in the environment
+        """
+
+        no_ac = len(self.objects['aircraft'].keys())
+        matrix = np.zeros((no_ac, no_ac))
+
+        for p_i, p_val in enumerate(self.objects['aircraft'].items()):
+            for o_i, o_val in enumerate(self.objects['aircraft'].items()):
+                if p_i == o_i:
+                    continue
+                
+                dist = round(get_dist(p_val[1].position, o_val[1].position),3)
+
+                matrix[p_i,o_i] = dist
+        
+        return matrix

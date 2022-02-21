@@ -5,9 +5,11 @@
 import string
 from queue import Queue
 
+import src.assets.colours as c
+from pygame import draw as d
 from src.geography.point import Point
 from src.geography.waypoint import Waypoint
-from src.utility.util import get_dist, get_heading
+from src.utility.util import dist_to_line, get_dist, get_heading
 
 __author__ = "Ellis Thompson"
 __credits__ = ["Ellis Thompson"]
@@ -134,10 +136,9 @@ class Route:
         in_bound = self.get_in_bound(ac_pos, max_dist, acc)
 
         # Has the aircraft reached it's goal
-        if d_next <= wpt_dist:
-            if self.route.qsize() == 0:
+        if self.next_waypoint.has_reached(ac_pos):
+            if self.route.qsize() <= 0:
                 return 1
-            # Update waypoint if not
             self.next_waypoint = self.route.get()
         
         # 
@@ -165,17 +166,9 @@ class Route:
         if max_dist == -1:
             return True
         
-        x1, y1 = self.previous_waypoint.get()
-        x2, y2 = self.next_waypoint.get()
-        x3, y3 = pos.get()
+       
 
-        dx, dy = x2-x1, y2-y1
-        det = (dx*dx) + (dy*dy)
-        a = (dy*(y3-y1)+dx*(x3-x1))/det
-
-        cx, cy = x1+a*dx,y1+a*dy
-
-        distance = round(get_dist(Point(cx,cy), pos), acc)
+        distance = round(dist_to_line(self.previous_waypoint, self.next_waypoint, pos), acc)
 
         if distance < max_dist:
             return True, distance
@@ -209,4 +202,9 @@ class Route:
         WINDOW
             The output window
         """
-        pass
+        path = []
+
+        for point in self.origional_route:
+            path.append(point.get())
+
+        d.lines(WINDOW,c.WHITE,False,path, width = 1)

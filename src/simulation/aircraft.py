@@ -5,8 +5,10 @@ Aircraft is respoinsible for the simplified implementation of an aircraft.
 """
 
 import string
+from collections import OrderedDict
 from math import pi, radians
 
+import numpy as np
 import src.assets.colours as c
 from pygame import draw as d
 from pygame import font
@@ -89,8 +91,11 @@ class Aircraft:
     draw_path
         Draw the path of the aircraft to the window
     
-    def get_text_stats
+    get_text_stats
         Get the text to output and its starting position
+    
+    get_state
+        Get the current state of the aircraft
 
     """
     def __init__(self, _id:string, start_pos:point.Point, spd:float = 30, alt:float = 100, heading:float = 0, scale:float = 1, route:route.Route = None):
@@ -133,9 +138,9 @@ class Aircraft:
         self.terminated = 0                 # How has the aircraft been terminated (0: exists, 1: safe, 2: out of bounds, 3: collision)
 
         # Visual constants
-        self.size = max(2, int(5/self.scale))           # Size of the visual aircraft
-        self.boarder_size = max(6, int(15/self.scale))  # Size for the visual boarder of the aircraft
-        self.text_boost = max(16, int(25/self.scale))   # Where the text should start
+        self.size = max(2, int(3/self.scale))           # Size of the visual aircraft
+        self.boarder_size = max(6, int(25/self.scale))  # Size for the visual boarder of the aircraft
+        self.text_boost = max(16, int(35/self.scale))   # Where the text should start
     
 
     def step(self, bounds: (int,int)):
@@ -146,6 +151,7 @@ class Aircraft:
         ----------
         bounds: (int,int)
             The bound of the world in meters (without scaling applied)
+
         """
 
         # Update the aircrafts position
@@ -160,8 +166,11 @@ class Aircraft:
         if not self.route == None:
             self.terminated = self.route.update(self.position)
 
-        if self.terminated == 0 and not self.in_world(bounds):
-            self.terminated = 2    
+        if self.terminated == 0: 
+            if not self.in_world(bounds):
+                self.terminated = 2
+
+        # print(f'{self._id}, {self.route.next_waypoint.dist_from(self.position)}')
 
         self.updater += 1
 
@@ -250,5 +259,19 @@ class Aircraft:
         text.append(f.render(t, True, c.WHITE))
 
         return text,(self.position.x + self.text_boost,self.position.y-self.text_boost)
+    
+    def get_state(self) -> dict:
+        """
+        Get the current state of the aircraft
+        """
+
+        state = {
+            'pos':self.position,
+            'hdg': self.heading,
+            'spd': self.spd,
+            'next_wpt': self.route.next_waypoint
+        }
+
+        return state
 
         

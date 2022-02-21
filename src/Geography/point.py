@@ -15,6 +15,7 @@ __maintainer__ = "Ellis Thompson"
 __email__ = "thompson_e@gwu.edu"
 __status__ = "Development"
 
+
 class Point:
     """
     The x, y coordinate of an object in the environment space.
