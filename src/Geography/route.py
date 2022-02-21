@@ -7,7 +7,7 @@ from queue import Queue
 
 from src.geography.point import Point
 from src.geography.waypoint import Waypoint
-from src.util import get_dist
+from src.utility.util import get_dist
 
 __author__ = "Ellis Thompson"
 __credits__ = ["Ellis Thompson"]
@@ -46,6 +46,9 @@ class Route:
     -------
     init_route(route)
         Initilise the route and prepare the next waypoints
+    
+    update(ac_pos, wpt_dist = 10, max_dist = 25, acc = 3)
+        Run an update and all checks on the aircraft position
 
     get_in_bound(pos, max_dist = 25, acc = 3)
         Returns if the a point is too far from the path between the next waypoint and previous waypoint
@@ -100,6 +103,41 @@ class Route:
         self.start = self.route.get()           # The start point of the route
         self.next_waypoint = self.route.get()   # The next waypoint after start
         self.previous_waypoint = self.start     # The waypoint the aircraft is leaving
+    
+    def update(self, ac_pos: Point, wpt_dist:float = 10, max_dist:int = 25, acc:int = 3) -> int:
+        """
+        Run an update and all checks on the aircraft position
+
+        Parameters
+        ----------
+        ac_pos: Point
+            The current aircraft postion
+
+        wpt_dist: float
+            The waypoint threashold distance for arrival
+
+        max_dist: float
+            The maximum deviation distance where -1 is infinate
+
+        acc: int
+            The accuracy to be considered
+        """
+
+        d_next = self.dist_to_next(ac_pos)
+        in_bound = self.get_in_bound(ac_pos, max_dist, acc)
+
+        # Has the aircraft reached it's goal
+        if d_next <= wpt_dist:
+            if self.next_waypoint == self.end:
+                return 1
+            # Update waypoint if not
+            self.next_waypoint = self.route.get()
+        
+        # 
+        if not in_bound[0]:
+            return 2
+        
+        return 0
     
     def get_in_bound(self, pos: Point, max_dist: float = 25, acc:int = 3) -> (bool, float):
         """

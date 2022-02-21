@@ -13,6 +13,7 @@ from time import sleep
 import numpy as np
 from src.geography.point import Point
 from src.simulation.aircraft import Aircraft
+from src.utility.filehandling import load_json
 
 __author__ = "Ellis Thompson"
 __credits__ = ["Ellis Thompson"]
@@ -98,7 +99,7 @@ class Environment():
         Draw a limited number of older paths
 
     """
-    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, start_points: [Point] = [0,0], min_spd: int = 20, max_spd: int = 20, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [9,12,15]):
+    def __init__(self, area:(int,int), visual:bool = True, fps:int =60, scale:float = 1, time_scale:float = 1, start_points: [Point] = [0,0], min_spd: int = 15, max_spd: int = 40, min_alt: int = 100, max_alt: int = 100, ac_prefix:string = "AC", delay:[int] = [9,12,15], env_path:string = None):
         """
         Parameters
         ----------
@@ -137,6 +138,9 @@ class Environment():
 
         delay: [int]
             Time in seconds between ac generation
+        
+        env_path: string
+            The file path to load an environment
 
         """
         # Environment Parameters
@@ -159,9 +163,15 @@ class Environment():
         self.objects = {                        # Dictionary of objects
             'aircraft':{},
             'waypoints':{},
-            'corridors':{},
+            'routes':{},
             'terminated':OrderedDict()
         }
+
+        if not env_path is None:
+            wpts, rts = load_json(env_path)
+
+            self.objects['waypoints'] = wpts
+            self.objects['routes'] = rts
 
         # Simulation Parameters
         self.running = False                    # Is the simulation running
@@ -181,10 +191,8 @@ class Environment():
         timer = 0
         next_ac = np.random.choice(self.delay, len(self.start_points))
         _len = size = np.random.randint(1, len(self.start_points)+1)
-        print(_len)
         next_ac[np.random.randint(len(self.start_points),
         size = _len)] = 0
-        print(next_ac)
 
         self.ran = True
         self.running = True
@@ -278,12 +286,9 @@ class Environment():
         for key, item in self.objects.items():
             if key == 'terminated':
                 continue
-            
-            try:
-                for _, __o in item.items():
-                    __o.draw(WINDOW)
-            except:
-                pass
+            for k, __o in item.items():
+                __o.draw(WINDOW)
+                    
     
     def draw_old_paths(self, WINDOW, max_paths = 100):
         """
@@ -301,7 +306,6 @@ class Environment():
         to_draw = np.array(list(self.objects['terminated'].items()))
         if len(to_draw) > max_paths:
             to_draw = to_draw[-max_paths:]
-        
         for ac in to_draw:
             ac[1].draw_path(WINDOW)
 

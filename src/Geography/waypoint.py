@@ -47,7 +47,7 @@ class Waypoint(Point):
         y: float
             The y coordinate of the waypoint
         """
-        super.__init__(self, x, y)  # Initilise parent
+        super().__init__(x, y)  # Initilise parent
 
         self._id = _id              # The unique ID for the waypoint
     
@@ -61,6 +61,6 @@ class Waypoint(Point):
             The output window
         """
 
-        d.rect(WINDOW, c.WHITE, [(self.x-5,self.y-5), (self.x+5,self.y-5), (self.x+5,self.y+5), (self.x-5,self.y+5)])
-
-        WINDOW.blit(f'{self._id}', (self.x+15, self.y-5))
+        f = font.SysFont('couriernew', 15)
+        d.polygon(WINDOW, c.WHITE, [(self.x-5,self.y-5), (self.x+5,self.y-5), (self.x+5,self.y+5), (self.x-5,self.y+5)])
+        WINDOW.blit(f.render(f'{self._id}', True, c.WHITE), (self.x+15, self.y-5))

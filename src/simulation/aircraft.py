@@ -80,14 +80,8 @@ class Aircraft:
     update_position
         Update the aircraft's position using speed, heading and current position
     
-    in_bounds(bounds)
-        Get if the aircraft is in all current bounds, the world and any corridors
-    
     in_world(bounds)
         Test that the aircraft is in the world, return if it exists in the world
-    
-    in_corridor
-        Test that, if the aircraft should be in a corridor, it is in that corridor
     
     draw(WINDOW)
         Draws the aircraft to the window
@@ -161,10 +155,13 @@ class Aircraft:
         if (self.updater%self.point_constant)*self.scale == 0:
             self.path.append(self.position.get())
 
-        in_world, in_bounds = self.in_bounds(bounds)
+        self.terminated = 0
 
-        if not in_world or not in_bounds:
-            self.terminated = 1    
+        if not self.route == None:
+            self.terminated = self.route.update(self.position)
+
+        if self.terminated == 0 and not self.in_world(bounds):
+            self.terminated = 2    
 
         self.updater += 1
 
@@ -180,20 +177,6 @@ class Aircraft:
 
         self.position.update(hdg, sim_speed)
     
-    def in_bounds(self, bounds: (int,int))-> (bool, bool):
-        """
-        Get if the aircraft is in all current bounds, the world and any corridors.
-        Returns a tuple of if the aircraft is in the world and if the aircraft is in 
-        it's corridor.
-
-        Parameters
-        ----------
-        bounds: (int,int)
-            The bound of the world in meters (without scaling applied)
-        """
-
-        return self.in_world(bounds), self.in_corridor()
-    
     def in_world(self, bounds: (int,int)) -> bool:
         """
         Test that the aircraft is in the world, return if it exists in the world
@@ -207,14 +190,6 @@ class Aircraft:
             if 0 <= self.position.y <= bounds[1]:
                 return True
         return False
-    
-    def in_corridor(self) -> bool():
-        """
-        Test that, if the aircraft should be in a corridor, it is in that corridor
-        """
-        if not self.route is None:
-            return self.route.in_corridor(self.position)
-        return True
     
     def draw(self, WINDOW):
         """
@@ -261,6 +236,9 @@ class Aircraft:
         f = font.SysFont('couriernew', 15)
         text = []
 
+        # Add ID
+        t = f'{self._id}'
+        text.append(f.render(t, True, c.WHITE))
         # Add heading
         t = f'{int((self.heading*-1)%360)}'
         text.append(f.render(t, True, c.WHITE))
