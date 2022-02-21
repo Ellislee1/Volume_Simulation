@@ -94,22 +94,22 @@ class Environment():
 
         """
         # Environment Parameters
-        self.area = area
-        self.visual = visual
-        self.fps = fps
-        self.scale = scale
-        self.time_scale = time_scale
+        self.area = area                        # The simulation area/world size
+        self.visual = visual                    # Is the UI present
+        self.fps = fps                          # What fps does the simulation run at
+        self.scale = scale                      # The world scale multiplier
+        self.time_scale = time_scale            # How quickly should the simulation run
 
         # Aircraft Parameters (for generation)
-        self.start_points = start_points
-        self.min_spd = min_spd
-        self.max_spd = max_spd
-        self.min_alt = min_alt
-        self.max_alt = max_alt
-        self.ac_prefix = ac_prefix
+        self.start_points = start_points        # All possible ac start positions
+        self.min_spd = min_spd                  # Minimum aircraft speed
+        self.max_spd = max_spd                  # Maximum aircraft speed
+        self.min_alt = min_alt                  # Minimum aircraft altitude
+        self.max_alt = max_alt                  # Maximum aircraft Altitude
+        self.ac_prefix = ac_prefix              # Default string prefix
 
         # Objects
-        self.objects = {
+        self.objects = {                        # Dictionary of objects
             'aircraft':{},
             'waypoints':{},
             'corridors':{},
@@ -117,7 +117,7 @@ class Environment():
         }
 
         # Simulation Parameters
-        self.running = False
+        self.running = False                    # Is the simulation running
     
     def run(self, max_aircraft:int = 0, delay:[int] = [9,12,15]):
         """
